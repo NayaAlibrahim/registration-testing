@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create New Account</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4ff;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      width: 420px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    }
+    h2 { text-align: center; margin-bottom: 24px; color: #1a1a2e; }
+    label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; margin-top: 14px; }
+    input {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid #ddd; border-radius: 8px;
+      font-size: 14px; outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #4361ee; }
+    input.error { border-color: #e63946; }
+    .err-msg { color: #e63946; font-size: 12px; margin-top: 4px; display: none; }
+    button {
+      width: 100%; margin-top: 24px;
+      padding: 12px; background: #4361ee;
+      color: white; border: none; border-radius: 8px;
+      font-size: 15px; cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #3a56d4; }
+    #successMsg {
+      display: none; text-align: center;
+      color: #2d6a4f; background: #d8f3dc;
+      padding: 10px; border-radius: 8px; margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h2>Create New Account</h2>
+  <form id="registrationForm" novalidate>
+
+    <label for="firstName">First Name</label>
+    <input type="text" id="firstName" name="firstName" placeholder="Enter first name" />
+    <div class="err-msg" id="firstNameErr"></div>
+
+    <label for="lastName">Last Name</label>
+    <input type="text" id="lastName" name="lastName" placeholder="Enter last name" />
+    <div class="err-msg" id="lastNameErr"></div>
+
+    <label for="email">E-mail</label>
+    <input type="text" id="email" name="email" placeholder="Enter email" />
+    <div class="err-msg" id="emailErr"></div>
+
+    <label for="dob">Date of Birth (dd/mm/yyyy)</label>
+    <input type="text" id="dob" name="dob" placeholder="dd/mm/yyyy" />
+    <div class="err-msg" id="dobErr"></div>
+
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" placeholder="Enter password" />
+    <div class="err-msg" id="passwordErr"></div>
+
+    <label for="confirmPassword">Confirm Password</label>
+    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password" />
+    <div class="err-msg" id="confirmPasswordErr"></div>
+
+    <button type="submit" id="submitBtn">SUBMIT</button>
+  </form>
+  <div id="successMsg">✅ Account created successfully!</div>
+</div>
+
+<script>
+  function showErr(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = 'block';
+    document.getElementById(id.replace('Err','')).classList.add('error');
+  }
+  function clearErr(id) {
+    const el = document.getElementById(id);
+    el.style.display = 'none';
+    document.getElementById(id.replace('Err','')).classList.remove('error');
+  }
+
+  document.getElementById('registrationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    let valid = true;
+    ['firstNameErr','lastNameErr','emailErr','dobErr','passwordErr','confirmPasswordErr'].forEach(clearErr);
+    document.getElementById('successMsg').style.display = 'none';
+
+    const fn = document.getElementById('firstName').value.trim();
+    const ln = document.getElementById('lastName').value.trim();
+    const em = document.getElementById('email').value.trim();
+    const dob = document.getElementById('dob').value.trim();
+    const pw = document.getElementById('password').value;
+    const cpw = document.getElementById('confirmPassword').value;
+
+    // First Name
+    if (!fn) { showErr('firstNameErr','First name is required.'); valid=false; }
+    else if (fn.length < 2) { showErr('firstNameErr','Min 2 characters.'); valid=false; }
+    else if (fn.length > 50) { showErr('firstNameErr','Max 50 characters.'); valid=false; }
+    else if (!/^[A-Za-z\s\-']+$/.test(fn)) { showErr('firstNameErr','Letters only.'); valid=false; }
+
+    // Last Name
+    if (!ln) { showErr('lastNameErr','Last name is required.'); valid=false; }
+    else if (ln.length < 2) { showErr('lastNameErr','Min 2 characters.'); valid=false; }
+    else if (ln.length > 50) { showErr('lastNameErr','Max 50 characters.'); valid=false; }
+    else if (!/^[A-Za-z\s\-']+$/.test(ln)) { showErr('lastNameErr','Letters only.'); valid=false; }
+
+    // Email
+    if (!em) { showErr('emailErr','Email is required.'); valid=false; }
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { showErr('emailErr','Invalid email format.'); valid=false; }
+
+    // DOB
+    if (!dob) { showErr('dobErr','Date of birth is required.'); valid=false; }
+    else {
+      const parts = dob.split('/');
+      const dobDate = parts.length===3 ? new Date(parts[2],parts[1]-1,parts[0]) : null;
+      const now = new Date();
+      if (!dobDate || isNaN(dobDate) || parts[0]>31 || parts[1]>12) {
+        showErr('dobErr','Invalid date format (dd/mm/yyyy).'); valid=false;
+      } else {
+        const age = (now - dobDate) / (1000*60*60*24*365.25);
+        if (age < 18) { showErr('dobErr','Must be at least 18 years old.'); valid=false; }
+        else if (age > 120) { showErr('dobErr','Invalid date of birth.'); valid=false; }
+      }
+    }
+
+    // Password
+    if (!pw) { showErr('passwordErr','Password is required.'); valid=false; }
+    else if (pw.length < 8) { showErr('passwordErr','Min 8 characters.'); valid=false; }
+    else if (pw.length > 64) { showErr('passwordErr','Max 64 characters.'); valid=false; }
+    else if (!/[A-Z]/.test(pw)) { showErr('passwordErr','Must contain uppercase letter.'); valid=false; }
+    else if (!/[0-9]/.test(pw)) { showErr('passwordErr','Must contain a number.'); valid=false; }
+
+    // Confirm Password
+    if (!cpw) { showErr('confirmPasswordErr','Please confirm your password.'); valid=false; }
+    else if (pw !== cpw) { showErr('confirmPasswordErr','Passwords do not match.'); valid=false; }
+
+    if (valid) {
+      document.getElementById('successMsg').style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>
